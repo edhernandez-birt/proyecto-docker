@@ -10,11 +10,23 @@ LABEL \
 
 # Instalamos el editor nano
 RUN \
-	apt-get update \
-	&& apt-get install nano
+    apt-get update \
+    && apt-get install ssh --yes \
+    && apt-get install git --yes
 
-# Copiamos el index al directorio por defecto del servidor Web
+
+
+# Copiamos el index al directorio por defecto del servidor Web + clave SSH
 COPY index.html /usr/local/apache2/htdocs/
+COPY SSH-key/id_rsa /etc
+
+#Comandos a ejecutar en el contenedor
+RUN eval "$(ssh-agent -s)" \
+&& chmod 700 /etc/id_rsa \
+&& ssh-add /etc/id_rsa \
+&& ssh-keyscan -H github.com >> /etc/ssh/ssh_known_hosts \
+&& git clone git@github.com:deaw-birt/proyecto-html.git /usr/local/apache2/htdocs/proyecto
+
 
 # Indicamos el puerto que utiliza la imagen
 EXPOSE 80
